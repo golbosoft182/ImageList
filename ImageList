@@ -1,0 +1,45 @@
+<?php
+// Get the 'path' parameter from the snippet call, or use a default path
+$folderPath = $modx->getOption('path', $scriptProperties, 'assets/images/merbabu');
+
+// Initialize an array to store image URLs and their thumbnails
+$imageData = array();
+
+// Get a list of files in the folder
+$files = scandir(MODX_BASE_PATH . $folderPath);
+
+// Loop through each file
+foreach ($files as $file) {
+    // Check if the file is a valid image file (you can customize this condition)
+    if (is_file(MODX_BASE_PATH . $folderPath . '/' . $file) && preg_match('/\.(jpg|jpeg|png|gif)$/i', $file)) {
+        // Build the full URL to the original image
+        $imageUrl = MODX_SITE_URL . $folderPath . '/' . $file;
+
+        // Generate thumbnail URL using phpthumbof snippet
+        $thumbnailParams = 'w=300&h=300&zc=1'; // Adjust parameters as needed
+        $imageURLthumb = $modx->runSnippet('phpthumbof', array('input' => $imageUrl, 'options' => $thumbnailParams));
+
+        // Add the original and thumbnail URLs to the array
+        $imageData[] = array(
+            'original' => $imageUrl,
+            'thumbnail' => $imageURLthumb,
+        );
+    }
+}
+
+// Output the list of images and their thumbnails
+$output = '<div class="row">';
+foreach ($imageData as $image) {
+    $output .= '<div class="col-md-3">';
+	$output .= '<div class="item-section-gal mb-4">';
+	$output .= '<div class="img">';
+	$output .= '<a href="' . $image['original'] . '" data-fancybox="gallery">';
+    $output .= '<img src="' . $image['thumbnail'] . '" alt="Thumbnail" title="" class="img img-fluid w-100">';
+    $output .= '</a>';
+	$output .= '</div>';
+    $output .= '</div>';
+	$output .= '</div>';
+}
+$output .= '</div>';
+
+return $output;
